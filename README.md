@@ -1,5 +1,7 @@
 # SSearch
 
+---
+
 SSearch is a sketch-based image retrieval web application, you can click [here](http://omap.fudan.edu.cn/sketch_based_image_retrieval) to see the live demo. This repository is the basic version of SSearch.
 
 By SSearch, you can draw a sketch on the drawing board，then the system will return similar images.The algorithm used in this application is based on our paper posted on ACM ICMR2015.
