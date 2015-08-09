@@ -15,7 +15,12 @@ By SSearch, you can draw a sketch on the drawing board，then the system will re
 
 ## Client
 
+Written in nodejs, providing a drawing board for user to draw. So when you deploy this application, nodejs should be installed first.
+
 ## Server
+
+Written in C++, computing the similarity between the image data and the images in the image database, then return the most similar images;
 
 ## Communication
 
+thrift RPC
