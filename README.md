@@ -1,4 +1,5 @@
-# SBIR-System
+# SSearch
+
 SSearch is a sketch-based image retrieval web application for image retrieval, you can click [here][1] to see the live demo. This repository is the basic version of SSearch. By SSearch, you can draw a sketch on the drawing board，then the system will return similar images.
 
 ![此处输入图片的描述][2]
