@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='/public/css/bootstrap.min.css' rel='stylesheet' media='screen'>
+  <script src='/public/js/jquery.js'></script>
+  <script src='/public/js/bootstrap.min.js'></script>
+</head>
+<body>
+
+<div class='container'>
+  <div class="head">
+    <h3 class="text-muted"><a href='/'>Sketch-based Image Retrieval</a></h3>
+  </div>
+
+  <div class='row'>
+    <div class='col-md-6'>
+      <canvas id='sketch'></canvas>
+    </div>
+
+    <div class='col-md-3'>
+      <h1>Draw It</h1>
+      <div>
+        <button class='btn btn-lg btn-primary btn-block' id='submit'>Submit</button>
+        <!--
+        <button class='btn btn-lg btn-default btn-block' id='reset'>Reset</button>
+        -->
+      </div>
+
+      <hr />
+
+      <h1>Or Upload</h1>
+      <form action='/upload' method='post' enctype="multipart/form-data">
+        <input type='file' name='sketch' accept='image/*' />
+      </form>
+    </div>
+  </div><!-- row fluid -->
+</div><!-- container fluid -->
+
+<style>
+#sketch {
+  width: 100%;
+  height: 100%;
+
+  border: 5px solid #666;
+}
+</style>
+
+<script>
+$(function () {
+  // TODO: resize canvas when window resized
+
+  $('#sketch').parent().height($('#sketch').parent().width() / 4 * 3);
+
+  var $view = $('#sketch');
+  var canvas = $view[0];
+  var context = canvas.getContext('2d');
+
+  window.paint = new Paint($view, canvas, context);
+
+  $('input[name=sketch]').change(function () {
+    var $this = $(this);
+    if ($this.val() !== "")
+      $this.parent().submit();
+  });
+
+  $('#submit').click(function () {
+    document.getElementById('submit').disabled = true;
+
+    var post_time = new Date();
+    $.ajax({
+      type: 'POST',
+      url: '/sketch',
+      data: {
+        imgData: canvas.toDataURL()
+      },
+    }).done(function (name) {
+      var recv_time = new Date();
+
+      console.log(recv_time - post_time);
+
+      location.href = '/query/' + name;
+    });
+  });
+});
+
+function Paint($view, canvas, context) {
+  var self = this;
+
+  (function init() {
+    canvas.height = $view.height();
+    canvas.width = $view.width();
+
+    context.lineCap = 'round';
+    context.fillStyle = "white";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    self.is_mousedown = false;
+    self.current_points = [];
+    self.contours = [];
+
+    $view.bind({
+      'mousemove': ev_mousemove,
+      'touchmove': function (ev) {
+        ev.preventDefault();
+
+        var offset = $view.offset();
+        var x = ev.originalEvent.touches[0].pageX - offset.left;
+        var y = ev.originalEvent.touches[0].pageY - offset.top;
+
+        if (self.is_mousedown == true) {
+          self.current_points.push([x, y]);
+        }
+      },
+      'mousedown touchstart': ev_mousedown,
+      'mouseup touchend': ev_mouseup,
+      'mouseleave': ev_mouseleave,
+    });
+
+    $('#reset').click(function () {
+      canvas.height = $view.height();
+      canvas.width = $view.width();
+      context.fillStyle = "white";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      self.is_mousedown = false;
+      self.contours = [];
+      self.current_points = [];
+    });
+
+    $(document).keydown(function (ev) {
+      if (ev.which == 90 && ev.ctrlKey) {
+        ev.preventDefault();
+
+        self.contours.pop();
+      }
+    });
+
+    (function loop() {
+      requestAnimationFrame(loop);
+      render();
+    })();
+  })();
+
+  function ev_mousemove(ev) {
+    ev.preventDefault();
+
+    var offset = $view.offset();
+    var x = ev.pageX - offset.left;
+    var y = ev.pageY - offset.top;
+
+    if (self.is_mousedown == true) {
+      self.current_points.push([x, y]);
+    }
+  }
+
+  function ev_mousedown(ev) {
+    ev.preventDefault();
+
+    self.is_mousedown = true;
+  }
+
+  function ev_mouseup(ev) {
+    ev.preventDefault();
+
+    self.is_mousedown = false;
+
+    self.contours.push(self.current_points);
+    self.current_points = [];
+  }
+
+  function ev_mouseleave(ev) {
+    ev.preventDefault();
+
+    self.is_mousedown = false;
+
+    self.contours.push(self.current_points);
+    self.current_points = [];
+  }
+
+  function render() {
+    context.fillRect(0, 0, 100000, 100000);
+    function draw_line(points) {
+      if (points.length < 1) return; 
+
+      context.beginPath();
+      context.moveTo(points[0][0], points[0][1]);
+
+      for (var j = 1; j < points.length; ++j) {
+        context.lineTo(points[j][0], points[j][1]);
+      }
+
+      context.stroke();
+    }
+
+    $.each(self.contours, function (_, points) {
+      draw_line(points);
+    });
+
+    draw_line(self.current_points);
+  }
+};
+
+if (!window.requestAnimationFrame) {
+  window.requestAnimationFrame = 
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame    ||
+    function(callback) {
+      window.setTimeout(callback, 1000 / 60);
+    };
+}
+
+</script>
+</body>
+</html>

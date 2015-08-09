@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='/public/css/bootstrap.min.css' rel='stylesheet' media='screen'>
+  <script src='/public/js/jquery.js'></script>
+  <script src='/public/js/bootstrap.min.js'></script>
+</head>
+<body>
+<h3 class='text-muted'><a href='/'>Sketch-based Image Retrieval</a></h3>
+<div class='query'><ul><li></li></ul></div>
+<h3 class='text-muted'>Results</h3>
+<div class='result'><ul></ul></div>
+
+<style>
+div.query img, div.result img {
+  height: 210px;
+  width: 280px;
+}
+
+div.query img {
+  border: 5px solid #666;
+}
+
+div.query > ul, div.result > ul {
+  list-style-type: none;
+}
+
+div.result > ul > li {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+</style>
+
+<script>
+var results = <%- results %>;
+$(function () {
+  $.each(results, function (query, _) {
+    $('div.query > ul > li').append($('<img />').attr('src', query));
+
+    $.each(results[query], function (_, url) {
+      var _url = url
+        //.replace('images/', 'images_small/')
+        //.replace('benchmark/', 'benchmark_small/');
+
+      _url = 'public/' + _url;
+
+      $('div.result > ul').append(['<li><img src="/', _url, '"></img></li>'].join(''));
+    });
+  });
+});
+</script>
+</body>
+</html>
