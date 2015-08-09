@@ -7,9 +7,11 @@ By SSearch, you can draw a sketch on the drawing board，then the system will re
 ![此处输入图片的描述](http://7xjuf4.com1.z0.glb.clouddn.com/sketch_sketch.PNG)
 
 
-## System Structure
+## System Workerflow
 
-SSearch is a C/S structure, the client will send image data to the server by the thrift RPC, the server will return the similar images.
+- 1) client send image data(Base64)
+- 2) thrift RPC transport image data to server
+- 3) server compute the image data, then return the result to clinet by thrift RPC 
 
 ## Client
 
